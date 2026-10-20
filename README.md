@@ -14,6 +14,7 @@ pnpm lint
 ## Content
 
 - Personal details, stack, and key links: `src/data/profile.ts`
+- Terminal commands and outputs: `src/data/commands.ts`
 - GPG public key: `public/keys/aliorpse-gpg.asc`
 - SSH public key: `public/keys/aliorpse-ssh.pub`
 - Self-hosted, subset Adwaita Sans & Adwaita Mono: `src/assets/fonts/`
@@ -23,8 +24,8 @@ pnpm lint
 Public keys are served as stable static files. The SSH copy button fetches the
 key from that file at runtime, so the key is not duplicated in source.
 
-Fonts live under `src/assets/fonts`; `public/` holds the keys, favicon, and
-font license.
+Fonts live under `src/assets/fonts`; `public/` holds the keys, favicon,
+font license, and deployment CNAME.
 
 The layout is designed to fit a single, non-scrolling viewport at common
 desktop and phone sizes. On very short screens the page falls back to normal

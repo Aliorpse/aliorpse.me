@@ -1,17 +1,8 @@
 import { useEffect, useState } from 'react'
 import { CopyButton } from './components/CopyButton'
 import { Icon } from './components/Icon'
+import { Terminal } from './components/Terminal'
 import { formatFingerprint, profile, shortenSshKey } from './data/profile'
-
-function Prompt({ command }: { command?: string }) {
-  return (
-    <span className="prompt" aria-hidden={command ? undefined : true}>
-      <span className="prompt-path" aria-hidden="true">~</span>
-      <span className="prompt-chevron" aria-hidden="true">❯</span>
-      {command ? <span className="prompt-command">{command}</span> : <span className="cursor" aria-hidden="true" />}
-    </span>
-  )
-}
 
 function App() {
   const [sshKey, setSshKey] = useState<string | null>(null)
@@ -40,33 +31,8 @@ function App() {
 
       <main className="stage">
         <section className="intro" aria-label="Introduction">
-          <div className="terminal">
-            <div className="terminal-bar" aria-hidden="true">
-              <span className="terminal-title">
-                <Icon name="terminal" size={13} />
-                Terminal
-              </span>
-              <span className="window-controls">
-                <span className="window-control minimize" />
-                <span className="window-control maximize" />
-                <span className="window-control close" />
-              </span>
-            </div>
-
-            <div className="terminal-body">
-              <p className="line command">
-                <Prompt command="whoami" />
-              </p>
-              <h1 className="name">{profile.handle}</h1>
-              <p className="line command second">
-                <Prompt command="cat stack" />
-              </p>
-              <p className="stack">{profile.stack}</p>
-              <p className="line command last">
-                <Prompt />
-              </p>
-            </div>
-          </div>
+          <h1 className="sr-only">{profile.handle}</h1>
+          <Terminal />
         </section>
 
         <section className="details" aria-label="Contact and keys">
