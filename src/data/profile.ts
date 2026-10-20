@@ -4,8 +4,6 @@ export const profile = {
   email: 'aliorpse@qq.com',
   github: 'https://github.com/Aliorpse',
   gpg: {
-    // Keep this fingerprint in sync with public/keys/aliorpse-gpg.asc.
-    fingerprint: '72E04270876A77F35221FDF169F352BD1A319222',
     href: '/keys/aliorpse-gpg.asc',
     filename: 'aliorpse-gpg.asc',
   },

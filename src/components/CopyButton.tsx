@@ -20,10 +20,9 @@ function fallbackCopy(text: string) {
 type CopyButtonProps = {
   text: string
   label: string
-  disabled?: boolean
 }
 
-export function CopyButton({ text, label, disabled = false }: CopyButtonProps) {
+export function CopyButton({ text, label }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
   const timer = useRef<number | undefined>(undefined)
 
@@ -47,21 +46,15 @@ export function CopyButton({ text, label, disabled = false }: CopyButtonProps) {
   }
 
   return (
-    <>
-      <button
-        type="button"
-        className="icon-button"
-        data-copied={copied || undefined}
-        disabled={disabled}
-        onClick={copy}
-        aria-label={label}
-        title={copied ? 'Copied' : label}
-      >
-        <Icon name={copied ? 'check' : 'copy'} />
-      </button>
-      <output className="sr-only" aria-live="polite">
-        {copied ? 'Copied' : ''}
-      </output>
-    </>
+    <button
+      type="button"
+      className="icon-button"
+      data-copied={copied || undefined}
+      onClick={copy}
+      aria-label={label}
+      title={copied ? 'Copied' : label}
+    >
+      <Icon name={copied ? 'check' : 'copy'} />
+    </button>
   )
 }

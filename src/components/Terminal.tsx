@@ -14,7 +14,8 @@ const MAX_ENTRIES = 100
 
 function outputOf(name: CommandName): ReactNode {
   const command = commands[name]
-  return command.type === 'output' ? command.output : null
+  if (command.type !== 'output') return null
+  return typeof command.output === 'function' ? command.output() : command.output
 }
 
 const initialCommands: CommandName[] = ['whoami', 'cat stack']
@@ -180,9 +181,6 @@ export function Terminal() {
   }
 
   return (
-    // The click handler is a pointer-only convenience (focus the input when the
-    // window is clicked); keyboard users reach the real <input> directly.
-    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div className="terminal" onClick={focusTerminal}>
       <div className="terminal-bar" aria-hidden="true">
         <span className="terminal-title">
@@ -196,16 +194,7 @@ export function Terminal() {
         </span>
       </div>
 
-      <div
-        className="terminal-output"
-        ref={outputRef}
-        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-        role="group"
-        aria-label="Terminal session"
-        // Focusable on purpose: lets keyboard users scroll the output.
-        // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-        tabIndex={0}
-      >
+      <div className="terminal-output" ref={outputRef}>
         <div className="terminal-log" role="log" aria-label="Terminal output">
           {entries.map((entry) => (
             <div className="terminal-entry" key={entry.id}>

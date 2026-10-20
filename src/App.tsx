@@ -4,6 +4,7 @@ import { Terminal } from './components/Terminal'
 import { formatFingerprint, profile, shortenSshKey } from './data/profile'
 
 const sshKey = __SSH_PUBLIC_KEY__
+const gpgFingerprint = __GPG_FINGERPRINT__
 
 function App() {
   return (
@@ -64,10 +65,10 @@ function App() {
                 </span>
                 <span className="row-label">GPG</span>
                 <span className="row-value row-value--fingerprint">
-                  {formatFingerprint(profile.gpg.fingerprint)}
+                  {formatFingerprint(gpgFingerprint)}
                 </span>
                 <span className="row-actions">
-                  <CopyButton text={profile.gpg.fingerprint} label="Copy GPG fingerprint" />
+                  <CopyButton text={gpgFingerprint} label="Copy GPG fingerprint" />
                   <a
                     className="icon-button"
                     href={profile.gpg.href}

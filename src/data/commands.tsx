@@ -3,12 +3,13 @@ import { profile } from './profile'
 
 const sourceUrl = `${profile.github}/aliorpse.me`
 
-export const commandNames = ['whoami', 'cat stack', 'clear', 'source', 'help'] as const
-export type CommandName = (typeof commandNames)[number]
+// `output` may be a function so it can be evaluated lazily, e.g. `help` needs
+// `commandNames`, which only exists once `commands` has been built.
+export type Command =
+  | { type: 'output'; output: ReactNode | (() => ReactNode) }
+  | { type: 'clear' }
 
-export type Command = { type: 'output'; output: ReactNode } | { type: 'clear' }
-
-export const commands: Record<CommandName, Command> = {
+export const commands = {
   whoami: {
     type: 'output',
     output: <span className="terminal-text">{profile.handle}</span>,
@@ -28,10 +29,15 @@ export const commands: Record<CommandName, Command> = {
   },
   help: {
     type: 'output',
-    output: <span className="terminal-text">commands: {commandNames.join(' · ')}</span>,
+    output: () => <span className="terminal-text">commands: {commandNames.join(' · ')}</span>,
   },
-}
+} satisfies Record<string, Command>
+
+export type CommandName = keyof typeof commands
+
+// Derived from `commands`, so adding a command is a single edit.
+export const commandNames = Object.keys(commands) as CommandName[]
 
 export function isCommandName(value: string): value is CommandName {
-  return (commandNames as readonly string[]).includes(value)
+  return Object.hasOwn(commands, value)
 }
