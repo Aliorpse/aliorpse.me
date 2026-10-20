@@ -11,6 +11,8 @@ pnpm build
 pnpm lint
 ```
 
+Requires Node.js 22.12+ and pnpm (the version is pinned in `packageManager`).
+
 ## Content
 
 - Personal details, stack, and key links: `src/data/profile.ts`
@@ -21,8 +23,13 @@ pnpm lint
 - Font license: `public/licenses/adwaita-fonts-OFL.txt`
 - Avatar used only as the favicon: `public/favicon.png`
 
-Public keys are served as stable static files. The SSH copy button fetches the
-key from that file at runtime, so the key is not duplicated in source.
+Public keys are served as stable static files. `vite.config.ts` reads
+`public/keys/aliorpse-ssh.pub` at build time and inlines it as
+`__SSH_PUBLIC_KEY__`, so the key is not duplicated in source and the page makes
+no runtime request for it.
+
+The GPG fingerprint in `src/data/profile.ts` must match
+`public/keys/aliorpse-gpg.asc`; CI checks this on every push and pull request.
 
 Fonts live under `src/assets/fonts`; `public/` holds the keys, favicon,
 font license, and deployment CNAME.

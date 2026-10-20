@@ -33,6 +33,7 @@ export function CopyButton({ text, label, disabled = false }: CopyButtonProps) {
     let copiedSuccessfully = true
 
     try {
+      if (!navigator.clipboard) throw new Error('Clipboard API unavailable')
       await navigator.clipboard.writeText(text)
     } catch {
       copiedSuccessfully = fallbackCopy(text)
@@ -53,14 +54,14 @@ export function CopyButton({ text, label, disabled = false }: CopyButtonProps) {
         data-copied={copied || undefined}
         disabled={disabled}
         onClick={copy}
-        aria-label={copied ? 'Copied' : label}
+        aria-label={label}
         title={copied ? 'Copied' : label}
       >
         <Icon name={copied ? 'check' : 'copy'} />
       </button>
-      <span className="sr-only" role="status" aria-live="polite">
+      <output className="sr-only" aria-live="polite">
         {copied ? 'Copied' : ''}
-      </span>
+      </output>
     </>
   )
 }

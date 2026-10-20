@@ -1,28 +1,11 @@
-import { useEffect, useState } from 'react'
 import { CopyButton } from './components/CopyButton'
 import { Icon } from './components/Icon'
 import { Terminal } from './components/Terminal'
 import { formatFingerprint, profile, shortenSshKey } from './data/profile'
 
+const sshKey = __SSH_PUBLIC_KEY__
+
 function App() {
-  const [sshKey, setSshKey] = useState<string | null>(null)
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    fetch(profile.ssh.href, { signal: controller.signal })
-      .then((response) => {
-        if (!response.ok) throw new Error(`SSH key request failed: ${response.status}`)
-        return response.text()
-      })
-      .then((text) => setSshKey(text.trim()))
-      .catch(() => {
-        if (!controller.signal.aborted) setSshKey(null)
-      })
-
-    return () => controller.abort()
-  }, [])
-
   return (
     <div className="page">
       <a className="wordmark" href="/" aria-label="aliorpse.me — home">
@@ -102,11 +85,11 @@ function App() {
                   <Icon name="terminal" />
                 </span>
                 <span className="row-label">SSH</span>
-                <span className="row-value row-value--ssh" title={sshKey ?? undefined}>
-                  {sshKey ? shortenSshKey(sshKey) : 'ssh-ed25519 …'}
+                <span className="row-value row-value--ssh" title={sshKey}>
+                  {shortenSshKey(sshKey)}
                 </span>
                 <span className="row-actions">
-                  <CopyButton text={sshKey ?? ''} label="Copy SSH public key" disabled={!sshKey} />
+                  <CopyButton text={sshKey} label="Copy SSH public key" />
                   <a
                     className="icon-button"
                     href={profile.ssh.href}

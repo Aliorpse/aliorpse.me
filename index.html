@@ -19,9 +19,27 @@
     <meta property="og:description" content="Email, GitHub, GPG, and SSH." />
     <meta property="og:url" content="https://aliorpse.me/" />
     <meta name="twitter:card" content="summary" />
+    <link
+      rel="preload"
+      href="/src/assets/fonts/adwaita-mono.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div class="noscript">
+        <p>Aliorpse</p>
+        <p>
+          <a href="mailto:aliorpse@qq.com">aliorpse@qq.com</a> ·
+          <a href="https://github.com/Aliorpse" rel="me">GitHub</a> ·
+          <a href="/keys/aliorpse-gpg.asc">GPG</a> ·
+          <a href="/keys/aliorpse-ssh.pub">SSH</a>
+        </p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

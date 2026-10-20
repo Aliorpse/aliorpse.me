@@ -1,21 +1,27 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ChangeEvent, FormEvent, KeyboardEvent, MouseEvent } from 'react'
+import type { ChangeEvent, FormEvent, KeyboardEvent, MouseEvent, ReactNode } from 'react'
 import { commandNames, commands, isCommandName } from '../data/commands'
-import { escapeHtml } from '../lib/html'
 import type { CommandName } from '../data/commands'
 import { Icon } from './Icon'
 
 type HistoryEntry = {
   id: number
   command: string
-  html: string
+  output: ReactNode
+}
+
+const MAX_ENTRIES = 100
+
+function outputOf(name: CommandName): ReactNode {
+  const command = commands[name]
+  return command.type === 'output' ? command.output : null
 }
 
 const initialCommands: CommandName[] = ['whoami', 'cat stack']
-const initialEntries: HistoryEntry[] = initialCommands.map((command, index) => ({
-  id: index,
+const initialEntries: HistoryEntry[] = initialCommands.map((command, id) => ({
+  id,
   command,
-  html: commands[command].html,
+  output: outputOf(command),
 }))
 
 function longestCommonPrefix(values: readonly string[]) {
@@ -26,6 +32,11 @@ function longestCommonPrefix(values: readonly string[]) {
     }
     return prefix.slice(0, index)
   })
+}
+
+// True when no modifier key is held, so the key press is a plain one.
+function isPlainKey(event: KeyboardEvent) {
+  return !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey
 }
 
 function Prompt({ command }: { command: string }) {
@@ -56,6 +67,11 @@ export function Terminal() {
     setEntries([])
   }
 
+  function appendEntry(command: string, output: ReactNode) {
+    const id = nextId.current++
+    setEntries((previous) => [...previous, { id, command, output }].slice(-MAX_ENTRIES))
+  }
+
   function focusTerminal(event: MouseEvent<HTMLDivElement>) {
     const target = event.target
     if (target instanceof Element && target.closest('a, button')) return
@@ -65,30 +81,22 @@ export function Terminal() {
   }
 
   function execute(raw: string) {
-    const command = raw.trim().replace(/\s+/g, ' ').toLowerCase()
+    const command = raw.trim().replace(/\s+/g, ' ')
     if (!command) return
 
     commandHistory.current.push(command)
     historyCursor.current = -1
 
-    if (isCommandName(command)) {
-      const entry = commands[command]
-      if (entry.clear) {
-        clearTerminal()
-      } else {
-        const id = nextId.current++
-        setEntries((previous) => [...previous, { id, command, html: entry.html }])
-      }
+    const name = command.toLowerCase()
+    if (!isCommandName(name)) {
+      appendEntry(
+        command,
+        <span className="terminal-text terminal-error">command not found: {command}</span>,
+      )
+    } else if (commands[name].type === 'clear') {
+      clearTerminal()
     } else {
-      const id = nextId.current++
-      setEntries((previous) => [
-        ...previous,
-        {
-          id,
-          command,
-          html: `<span class="terminal-text terminal-error">command not found: ${escapeHtml(command)}</span>`,
-        },
-      ])
+      appendEntry(command, outputOf(name))
     }
 
     setValue('')
@@ -99,21 +107,22 @@ export function Terminal() {
     execute(value)
   }
 
+  // Completion works on the raw (lower-cased) input so that the ghost text and
+  // Tab / ArrowRight always agree with each other.
+  const normalizedValue = value.toLowerCase()
+  const matches = normalizedValue
+    ? commandNames.filter((name) => name.startsWith(normalizedValue))
+    : []
+  const ghost =
+    matches.length === 1 && matches[0] && matches[0].length > value.length
+      ? matches[0].slice(value.length)
+      : ''
+
   function acceptCompletion() {
-    const prefix = value.trim().toLowerCase()
-    if (!prefix) return false
-
-    const matches = commandNames.filter((name) => name.startsWith(prefix))
     if (matches.length === 0) return false
-    if (matches.length === 1) {
-      if (matches[0].length <= value.length) return false
-      setValue(matches[0])
-      return true
-    }
-
-    const common = longestCommonPrefix(matches)
-    if (common.length <= prefix.length) return false
-    setValue(common)
+    const completion = longestCommonPrefix(matches)
+    if (completion.length <= value.length) return false
+    setValue(completion)
     return true
   }
 
@@ -122,38 +131,38 @@ export function Terminal() {
     if (items.length === 0) return
     const next = Math.min(historyCursor.current + 1, items.length - 1)
     historyCursor.current = next
-    setValue(items[items.length - 1 - next])
+    setValue(items[items.length - 1 - next] ?? '')
   }
 
   function historyDown() {
     const items = commandHistory.current
-    if (items.length === 0) return
+    if (historyCursor.current < 0) return
     const next = historyCursor.current - 1
     historyCursor.current = next
-    setValue(next < 0 ? '' : items[items.length - 1 - next])
+    setValue(next < 0 ? '' : (items[items.length - 1 - next] ?? ''))
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'Tab' && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    if (event.key === 'Tab' && isPlainKey(event)) {
       event.preventDefault()
       acceptCompletion()
       return
     }
 
-    if (event.key === 'ArrowRight' && !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) {
+    if (event.key === 'ArrowRight' && isPlainKey(event)) {
       const input = event.currentTarget
       const atEnd = input.selectionStart === value.length && input.selectionEnd === value.length
       if (atEnd && acceptCompletion()) event.preventDefault()
       return
     }
 
-    if (event.key === 'ArrowUp' && !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) {
+    if (event.key === 'ArrowUp' && isPlainKey(event)) {
       event.preventDefault()
       historyUp()
       return
     }
 
-    if (event.key === 'ArrowDown' && !event.shiftKey && !event.altKey && !event.ctrlKey && !event.metaKey) {
+    if (event.key === 'ArrowDown' && isPlainKey(event)) {
       event.preventDefault()
       historyDown()
       return
@@ -170,16 +179,10 @@ export function Terminal() {
     historyCursor.current = -1
   }
 
-  const normalizedValue = value.toLowerCase()
-  const matchingCommands = normalizedValue
-    ? commandNames.filter((name) => name.startsWith(normalizedValue))
-    : []
-  const ghost =
-    matchingCommands.length === 1 && matchingCommands[0].length > value.length
-      ? matchingCommands[0].slice(value.length)
-      : ''
-
   return (
+    // The click handler is a pointer-only convenience (focus the input when the
+    // window is clicked); keyboard users reach the real <input> directly.
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div className="terminal" onClick={focusTerminal}>
       <div className="terminal-bar" aria-hidden="true">
         <span className="terminal-title">
@@ -196,8 +199,11 @@ export function Terminal() {
       <div
         className="terminal-output"
         ref={outputRef}
+        // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
         role="group"
         aria-label="Terminal session"
+        // Focusable on purpose: lets keyboard users scroll the output.
+        // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
         tabIndex={0}
       >
         <div className="terminal-log" role="log" aria-label="Terminal output">
@@ -206,7 +212,7 @@ export function Terminal() {
               <p className="terminal-command">
                 <Prompt command={entry.command} />
               </p>
-              <div className="terminal-result" dangerouslySetInnerHTML={{ __html: entry.html }} />
+              <div className="terminal-result">{entry.output}</div>
             </div>
           ))}
         </div>
