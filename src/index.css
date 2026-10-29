@@ -49,8 +49,8 @@
   --row-ssh-size: 12.5px;
   --button-size: 30px;
 
-  --sans: 'Adwaita Sans', 'Inter', 'Noto Sans', system-ui, sans-serif;
-  --mono: 'Adwaita Mono', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --sans: 'Adwaita Sans', sans-serif;
+  --mono: 'Adwaita Mono', monospace;
 
   color-scheme: dark;
   font-family: var(--sans);
